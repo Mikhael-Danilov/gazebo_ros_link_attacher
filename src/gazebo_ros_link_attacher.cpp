@@ -5,6 +5,9 @@
 #include "gazebo_ros_link_attacher/Attach.h"
 #include "gazebo_ros_link_attacher/AttachRequest.h"
 #include "gazebo_ros_link_attacher/AttachResponse.h"
+#include "gazebo_ros_link_attacher/DetachJoint.h"
+#include "gazebo_ros_link_attacher/DetachJointRequest.h"
+#include "gazebo_ros_link_attacher/DetachJointResponse.h"
 #include <ignition/math/Pose3.hh>
 
 namespace gazebo
@@ -42,6 +45,9 @@ namespace gazebo
     ROS_INFO_STREAM("Attach service at: " << this->nh_.resolveName("attach"));
     this->detach_service_ = this->nh_.advertiseService("detach", &GazeboRosLinkAttacher::detach_callback, this);
     ROS_INFO_STREAM("Detach service at: " << this->nh_.resolveName("detach"));
+
+    this->detach_joint_service_ = this->nh_.advertiseService("detach_joint", &GazeboRosLinkAttacher::detach_joint_callback, this);
+    ROS_INFO_STREAM("Detach joint service at: " << this->nh_.resolveName("detach_joint"));
     ROS_INFO("Link attacher node initialized.");
   }
 
@@ -214,4 +220,32 @@ namespace gazebo
       return true;
   }
 
+  bool GazeboRosLinkAttacher::detach_joint_callback(gazebo_ros_link_attacher::DetachJoint::Request &req,
+                                                    gazebo_ros_link_attacher::DetachJoint::Response &res) {
+      ROS_INFO_STREAM("Received request to detach model: '" << req.model_name
+                                                            << "' using joint: '" << req.joint_name<<"'");
+      if (! this->jointDetach(req.model_name, req.joint_name)){
+          ROS_ERROR_STREAM("Could not make the detach.");
+          res.ok = false;
+      }
+      else{
+          ROS_INFO_STREAM("Detach was succesful");
+          res.ok = true;
+      }
+      return true;
+  }
+
+  bool GazeboRosLinkAttacher::jointDetach(std::string model, std::string joint) {
+      ROS_DEBUG_STREAM("Getting ModelPtr of " << model);
+      physics::ModelPtr m = this->world->ModelByName(model);
+      if(!m){
+          ROS_ERROR_STREAM(model << " model was not found");
+          return false;
+      }
+      boost::recursive_mutex::scoped_lock lock(*this->physics_mutex);
+
+      m->RemoveJoint(joint);
+
+      return true;
+    }
 }

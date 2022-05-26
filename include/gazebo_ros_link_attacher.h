@@ -24,6 +24,9 @@
 #include "gazebo_ros_link_attacher/Attach.h"
 #include "gazebo_ros_link_attacher/AttachRequest.h"
 #include "gazebo_ros_link_attacher/AttachResponse.h"
+#include "gazebo_ros_link_attacher/DetachJoint.h"
+#include "gazebo_ros_link_attacher/DetachJointRequest.h"
+#include "gazebo_ros_link_attacher/DetachJointResponse.h"
 
 namespace gazebo
 {
@@ -48,6 +51,10 @@ namespace gazebo
         bool detach(std::string model1, std::string link1,
                     std::string model2, std::string link2);
 
+        /// \brief Joint detach
+        bool jointDetach(std::string model, std::string joint);
+
+
         /// \brief Internal representation of a fixed joint
         struct fixedJoint{
             std::string model1;
@@ -67,11 +74,14 @@ namespace gazebo
         ros::NodeHandle nh_;
         ros::ServiceServer attach_service_;
         ros::ServiceServer detach_service_;
+        ros::ServiceServer detach_joint_service_;
 
         bool attach_callback(gazebo_ros_link_attacher::Attach::Request &req,
                               gazebo_ros_link_attacher::Attach::Response &res);
         bool detach_callback(gazebo_ros_link_attacher::Attach::Request &req,
                              gazebo_ros_link_attacher::Attach::Response &res);
+        bool detach_joint_callback(gazebo_ros_link_attacher::DetachJoint::Request &req,
+                                   gazebo_ros_link_attacher::DetachJoint::Response &res);
 
         std::vector<fixedJoint> joints;
 
