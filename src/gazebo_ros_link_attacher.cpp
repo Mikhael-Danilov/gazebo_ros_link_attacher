@@ -196,7 +196,7 @@ namespace gazebo
       res.ok = false;
     }
     else{
-      ROS_INFO_STREAM("Attach was succesful");
+      ROS_INFO_STREAM("Attach was successful");
       res.ok = true;
     }
     return true;
@@ -229,7 +229,7 @@ namespace gazebo
           res.ok = false;
       }
       else{
-          ROS_INFO_STREAM("Detach was succesful");
+          ROS_INFO_STREAM("Detach was successful");
           res.ok = true;
       }
       return true;
