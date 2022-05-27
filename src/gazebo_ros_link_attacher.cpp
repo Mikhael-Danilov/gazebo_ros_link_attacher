@@ -236,14 +236,16 @@ namespace gazebo
   }
 
   bool GazeboRosLinkAttacher::jointDetach(std::string model, std::string joint) {
-      ROS_DEBUG_STREAM("Getting ModelPtr of " << model);
+      ROS_INFO_STREAM("Getting ModelPtr of " << model);
+
       physics::ModelPtr m = this->world->ModelByName(model);
       if(!m){
           ROS_ERROR_STREAM(model << " model was not found");
           return false;
       }
+      ROS_INFO_STREAM("Locking physics mutex");
       boost::recursive_mutex::scoped_lock lock(*this->physics_mutex);
-
+      ROS_INFO_STREAM("Removing joint");
       m->RemoveJoint(joint);
 
       return true;
