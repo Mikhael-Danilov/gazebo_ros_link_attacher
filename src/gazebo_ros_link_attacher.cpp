@@ -54,7 +54,8 @@ namespace gazebo
   bool GazeboRosLinkAttacher::attach(std::string model1, std::string link1,
                                      std::string model2, std::string link2)
   {
-
+    ROS_INFO_STREAM("Locking physics mutex");
+    boost::recursive_mutex::scoped_lock lock(*this->physics_mutex);
     // look for any previous instance of the joint first.
     // if we try to create a joint in between two links
     // more than once (even deleting any reference to the first one)
@@ -222,8 +223,8 @@ namespace gazebo
 
   bool GazeboRosLinkAttacher::detach_joint_callback(gazebo_ros_link_attacher::DetachJoint::Request &req,
                                                     gazebo_ros_link_attacher::DetachJoint::Response &res) {
-      ROS_INFO_STREAM("Received request to detach model: '" << req.model_name
-                                                            << "' using joint: '" << req.joint_name<<"'");
+      ROS_INFO_STREAM("Received request to detach : '" << req.joint_name
+                                                            << "' from '" << req.model_name <<"'");
       if (! this->jointDetach(req.model_name, req.joint_name)){
           ROS_ERROR_STREAM("Could not make the detach.");
           res.ok = false;
@@ -236,18 +237,19 @@ namespace gazebo
   }
 
   bool GazeboRosLinkAttacher::jointDetach(std::string model, std::string joint) {
-      ROS_INFO_STREAM("Getting ModelPtr of " << model);
+      ROS_INFO_STREAM("Locking physics mutex");
+      boost::recursive_mutex::scoped_lock lock(*this->physics_mutex);
 
+      ROS_INFO_STREAM("Getting ModelPtr of " << model);
       physics::ModelPtr m = this->world->ModelByName(model);
       if(!m){
           ROS_ERROR_STREAM(model << " model was not found");
           return false;
       }
-      ROS_INFO_STREAM("Locking physics mutex");
-      boost::recursive_mutex::scoped_lock lock(*this->physics_mutex);
+
       ROS_INFO_STREAM("Removing joint");
       m->RemoveJoint(joint);
-
+      ROS_INFO_STREAM("Detach finished.");
       return true;
     }
 }
